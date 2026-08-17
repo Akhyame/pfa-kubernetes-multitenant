@@ -1,0 +1,53 @@
+tenant:
+  name: atlas
+  hostname: atlas.infragilis.local
+
+replicaCount: 1
+
+image:
+  repository: louislam/uptime-kuma
+  tag: 2-rootless
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 3001
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+persistence:
+  storageClass: local-path
+  accessMode: ReadWriteOnce
+  size: 2Gi
+  mountPath: /app/data
+
+quota:
+  requestsCpu: "1"
+  requestsMemory: 1Gi
+  limitsCpu: "2"
+  limitsMemory: 2Gi
+  pods: "10"
+  persistentVolumeClaims: "3"
+
+limitRange:
+  defaultRequest:
+    cpu: 100m
+    memory: 128Mi
+  default:
+    cpu: 500m
+    memory: 512Mi
+  min:
+    cpu: 50m
+    memory: 64Mi
+  max:
+    cpu: "1"
+    memory: 1Gi
+
+tls:
+  issuerName: infragilis-ca

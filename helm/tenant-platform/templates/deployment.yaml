@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: uptime-kuma
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "tenant-platform.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "tenant-platform.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "tenant-platform.selectorLabels" . | nindent 8 }}
+        tenant: {{ .Values.tenant.name }}
+    spec:
+      serviceAccountName: uptime-kuma
+      automountServiceAccountToken: false
+
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+
+      containers:
+        - name: uptime-kuma
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+
+          startupProbe:
+            tcpSocket:
+              port: {{ .Values.service.port }}
+            periodSeconds: 5
+            failureThreshold: 30
+
+          readinessProbe:
+            tcpSocket:
+              port: {{ .Values.service.port }}
+            periodSeconds: 5
+            failureThreshold: 3
+
+          livenessProbe:
+            tcpSocket:
+              port: {{ .Values.service.port }}
+            periodSeconds: 10
+            failureThreshold: 3
+
+          volumeMounts:
+            - name: data
+              mountPath: {{ .Values.persistence.mountPath }}
+
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: uptime-kuma-data

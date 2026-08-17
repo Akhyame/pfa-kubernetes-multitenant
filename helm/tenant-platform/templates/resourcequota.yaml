@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: tenant-quota
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "tenant-platform.labels" . | nindent 4 }}
+spec:
+  hard:
+    requests.cpu: {{ .Values.quota.requestsCpu | quote }}
+    requests.memory: {{ .Values.quota.requestsMemory }}
+    limits.cpu: {{ .Values.quota.limitsCpu | quote }}
+    limits.memory: {{ .Values.quota.limitsMemory }}
+    pods: {{ .Values.quota.pods | quote }}
+    persistentvolumeclaims: {{ .Values.quota.persistentVolumeClaims | quote }}

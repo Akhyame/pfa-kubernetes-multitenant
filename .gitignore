@@ -1,0 +1,9 @@
+# Pre-Helm migration backups
+orange-before-helm.yaml
+maroctech-before-helm.yaml
+
+# Local backup files
+*.backup
+
+# Editor temporary files
+*.swp

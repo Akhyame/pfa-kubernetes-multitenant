@@ -1,0 +1,6 @@
+apiVersion: v2
+name: tenant-platform
+description: Secure multi-tenant Uptime Kuma deployment chart for the Infragilis Kubernetes platform
+type: application
+version: 0.1.0
+appVersion: "2"

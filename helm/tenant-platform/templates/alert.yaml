@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: uptime-kuma-alerts
+  namespace: {{ .Release.Namespace }}
+  labels:
+    release: monitoring
+    tenant: {{ .Values.tenant.name }}
+spec:
+  groups:
+    - name: {{ .Values.tenant.name }}.uptime-kuma
+      rules:
+        - alert: TenantUptimeKumaUnavailable
+          expr: kube_deployment_status_replicas_available{namespace="{{ .Release.Namespace }}",deployment="uptime-kuma"} < 1
+          for: 30s
+          labels:
+            severity: warning
+            tenant: {{ .Values.tenant.name }}
+          annotations:
+            summary: "{{ .Values.tenant.name }} Uptime Kuma is unavailable"
+            description: "The Uptime Kuma deployment for tenant {{ .Values.tenant.name }} has no available replicas."
