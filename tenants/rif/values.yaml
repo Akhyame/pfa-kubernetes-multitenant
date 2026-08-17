@@ -3,4 +3,4 @@ tenant:
   hostname: rif.infragilis.local
 
 quota:
-  pods: "9"
+  pods: "10"
