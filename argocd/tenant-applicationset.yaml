@@ -1,0 +1,56 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: tenant-platform
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+
+  generators:
+    - git:
+        repoURL: https://github.com/Akhyame/pfa-kubernetes-multitenant.git
+        revision: main
+        directories:
+          - path: tenants/*
+          - path: tenants/orange
+            exclude: true
+          - path: tenants/maroctech
+            exclude: true
+
+  template:
+    metadata:
+      name: '{{.path.basenameNormalized}}'
+      labels:
+        tenant: '{{.path.basename}}'
+
+    spec:
+      project: default
+
+      source:
+        repoURL: https://github.com/Akhyame/pfa-kubernetes-multitenant.git
+        targetRevision: main
+        path: helm/tenant-platform
+        helm:
+          releaseName: '{{.path.basename}}'
+          valueFiles:
+            - '../../tenants/{{.path.basename}}/values.yaml'
+
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{.path.basename}}'
+
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
+
+        managedNamespaceMetadata:
+          labels:
+            tenant: '{{.path.basename}}'
+            pod-security.kubernetes.io/enforce: restricted
+            pod-security.kubernetes.io/enforce-version: v1.36
+            pod-security.kubernetes.io/warn: restricted
+            pod-security.kubernetes.io/warn-version: v1.36
+            pod-security.kubernetes.io/audit: restricted
+            pod-security.kubernetes.io/audit-version: v1.36
