@@ -49,6 +49,8 @@ spec:
           - CreateNamespace=true
 
         managedNamespaceMetadata:
+          annotations:
+            argocd.argoproj.io/tracking-id: '{{.path.basenameNormalized}}:/Namespace:/{{.path.basename}}'
           labels:
             tenant: '{{.path.basename}}'
             pod-security.kubernetes.io/enforce: restricted
