@@ -1,0 +1,6 @@
+tenant:
+  name: tenant-test
+  hostname: tenant-test.infragilis.local
+
+quota:
+  pods: "10"
