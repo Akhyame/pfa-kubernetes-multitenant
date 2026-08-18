@@ -1,6 +1,0 @@
-tenant:
-  name: lifecycle-test
-  hostname: lifecycle-test.infragilis.local
-
-quota:
-  pods: "10"
