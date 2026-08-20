@@ -14,31 +14,71 @@ The security model combines Kubernetes namespaces with network isolation, RBAC, 
 
 ## Architecture
 
+The architecture separates **runtime user traffic** from the **GitOps deployment and reconciliation workflow**.
+
+### Runtime Traffic & Tenant Isolation
+
 ```mermaid
 flowchart TB
-    U[External User] --> T[Traefik Ingress]
-
-    T --> A[Atlas]
-    T --> O[Orange]
-    T --> M[MarocTech]
-    T --> R[Rif]
+    U[External User]
 
     subgraph K3S[Shared K3s Cluster]
-        A
-        O
-        M
-        R
-        C[Cilium]
-        OBS[Prometheus / Grafana / Loki / Hubble]
+        T[Traefik Ingress]
+
+        A[Atlas Namespace\nUptime Kuma • Service • PVC]
+        O[Orange Namespace\nUptime Kuma • Service • PVC]
+        M[MarocTech Namespace\nUptime Kuma • Service • PVC]
+        R[Rif Namespace\nUptime Kuma • Service • PVC]
+
+        C[Cilium\nNetworking & Policy Enforcement]
+        S[Per-Tenant Security Baseline\nRBAC • PSA • NetworkPolicies • Quotas]
+        OBS[Observability\nPrometheus • Grafana • Loki • Alloy • Hubble]
+
+        T --> A
+        T --> O
+        T --> M
+        T --> R
+
+        C -. enforces network policy .-> A
+        C -. enforces network policy .-> O
+        C -. enforces network policy .-> M
+        C -. enforces network policy .-> R
+
+        S -. applied to .-> A
+        S -. applied to .-> O
+        S -. applied to .-> M
+        S -. applied to .-> R
+
+        OBS -. monitors .-> A
+        OBS -. monitors .-> O
+        OBS -. monitors .-> M
+        OBS -. monitors .-> R
     end
 
-    G[Git] --> CD[Argo CD ApplicationSet]
-    CD --> H[Helm tenant-platform]
-    H --> A
-    H --> O
-    H --> M
-    H --> R
+    U -->|HTTPS| T
 ```
+
+Runtime requests enter the cluster through **Traefik**, which routes traffic to the correct tenant. **Cilium** enforces network controls, while RBAC, Pod Security Admission, NetworkPolicies, quotas, and other tenant-specific controls provide layered isolation. Observability is provided through Prometheus, Grafana, Loki, Grafana Alloy, and Cilium Hubble.
+
+### GitOps Deployment & Reconciliation
+
+```mermaid
+flowchart LR
+    G[Git Repository]
+    CD[Argo CD ApplicationSet]
+    H[Helm tenant-platform]
+    N[Tenant Namespace]
+    W[Uptime Kuma + Service + PVC]
+    SEC[RBAC + PSA + Network Policies + Quotas + TLS]
+
+    G --> CD
+    CD --> H
+    H --> N
+    N --> W
+    N --> SEC
+```
+
+Git stores the desired tenant configuration. **Argo CD ApplicationSet** discovers and reconciles tenant definitions, while the reusable **Helm `tenant-platform` chart** applies the tenant workload and security baseline. **cert-manager** provides tenant TLS certificates using the private laboratory CA.
 
 **Core components:** K3s, Cilium, Traefik, cert-manager, Helm, Argo CD, Prometheus, Grafana, Loki, Grafana Alloy, and Cilium Hubble.
 
