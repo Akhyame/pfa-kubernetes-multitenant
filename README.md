@@ -167,15 +167,37 @@ The repository currently tracks GitOps tenant values for **MarocTech, Orange, an
 
 ## Selected Evidence
 
-Public validation evidence is documented in the portfolio project page and academic report. Repository screenshots will be added under `assets/` once the final public evidence set is published.
+The following screenshots provide direct evidence of the main security and automation controls validated in the lab. Additional technical evidence is available in the full project documentation and academic report.
 
-Key validated evidence includes:
+### 1. Pod Security Admission Enforcement
 
-- Pod Security Admission rejecting an insecure workload
-- Cilium Hubble showing blocked Orange → Atlas traffic
-- Cross-tenant RBAC returning `Forbidden`
-- Argo CD provisioning a tenant through GitOps
-- Final operational validation of the four tenant environments
+![Pod Security Admission rejection](assets/pod-security-admission-rejection.jpg)
+
+A deliberately insecure workload was rejected by the namespace's **Restricted Pod Security** policy, confirming admission-level workload hardening.
+
+### 2. Inter-Tenant Network Isolation
+
+![Cilium Hubble blocked Orange to Atlas traffic](assets/hubble-orange-to-atlas-dropped.jpg)
+
+**Cilium Hubble** shows unauthorized traffic from Orange to Atlas being dropped, validating cross-tenant network isolation.
+
+### 3. Cross-Tenant RBAC Denial
+
+![Cross-tenant RBAC access denied](assets/rbac-cross-tenant-access-denied.jpg)
+
+A tenant-scoped identity was denied access to resources in another namespace, confirming **least-privilege RBAC** and cross-tenant API isolation.
+
+### 4. GitOps Tenant Provisioning
+
+![Argo CD provisioning Rif tenant](assets/argocd-rif-provisioning.jpg)
+
+The Rif tenant was provisioned through the standardized **Git + Argo CD + Helm** workflow, validating reproducible GitOps onboarding.
+
+### 5. Final Multi-Tenant Health Validation
+
+![Final four-tenant health validation](assets/final-four-tenants-health-validation.jpg)
+
+Final validation confirms the expected tenant workloads are operational across the four isolated environments.
 
 ## Technologies
 
