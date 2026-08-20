@@ -4,6 +4,31 @@ maroctech-before-helm.yaml
 
 # Local backup files
 *.backup
+*.bak
 
-# Editor temporary files
+# Kubernetes credentials and local cluster configuration
+kubeconfig
+kubeconfig.*
+*.kubeconfig
+.kube/
+
+# Environment files and local secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+
+# Local secret manifests
+*secret*.local.yaml
+*secret*.local.yml
+
+# Editor / OS temporary files
 *.swp
+*.swo
+.DS_Store
+Thumbs.db
