@@ -163,7 +163,11 @@ The repository currently tracks GitOps tenant values for **MarocTech, Orange, an
 ./scripts/tenantctl.sh delete <tenant-name>
 ```
 
-> The helper script contains lab-specific chart and K3s kubeconfig paths and must be adapted before reuse in another environment.
+The helper resolves the Helm chart relative to the repository and uses the standard K3s kubeconfig path by default. Both can be overridden without editing the script:
+
+```bash
+CHART=/path/to/chart KUBECONFIG_PATH=/path/to/kubeconfig ./scripts/tenantctl.sh create <tenant-name> <hostname>
+```
 
 ## Selected Evidence
 
