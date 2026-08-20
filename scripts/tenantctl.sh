@@ -2,9 +2,12 @@
 
 set -euo pipefail
 
-CHART="/home/k8sadmin/PFA/helm/tenant-platform"
-KUBECONFIG="/etc/rancher/k3s/k3s.yaml"
-PSA_VERSION="v1.36"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
+
+CHART="${CHART:-${REPO_ROOT}/helm/tenant-platform}"
+KUBECONFIG_PATH="${KUBECONFIG_PATH:-/etc/rancher/k3s/k3s.yaml}"
+PSA_VERSION="${PSA_VERSION:-v1.36}"
 
 usage() {
   echo "Usage:"
@@ -21,7 +24,7 @@ create_tenant() {
 
   echo "[1/4] Creating namespace: $TENANT"
   sudo kubectl create namespace "$TENANT" \
-    --kubeconfig "$KUBECONFIG"
+    --kubeconfig "$KUBECONFIG_PATH"
 
   echo "[2/4] Applying tenant and Pod Security labels"
   sudo kubectl label namespace "$TENANT" \
@@ -33,7 +36,7 @@ create_tenant() {
     "pod-security.kubernetes.io/audit=restricted" \
     "pod-security.kubernetes.io/audit-version=$PSA_VERSION" \
     --overwrite \
-    --kubeconfig "$KUBECONFIG"
+    --kubeconfig "$KUBECONFIG_PATH"
 
   echo "[3/4] Installing tenant platform with Helm"
   sudo helm install "$TENANT" "$CHART" \
@@ -42,7 +45,7 @@ create_tenant() {
     --set "tenant.hostname=$HOSTNAME" \
     --wait \
     --timeout 5m \
-    --kubeconfig "$KUBECONFIG"
+    --kubeconfig "$KUBECONFIG_PATH"
 
   echo "[4/4] Tenant provisioned successfully"
   echo "Tenant:   $TENANT"
@@ -60,7 +63,7 @@ suspend_tenant() {
     --set replicaCount=0 \
     --wait \
     --timeout 5m \
-    --kubeconfig "$KUBECONFIG"
+    --kubeconfig "$KUBECONFIG_PATH"
 
   echo "[2/2] Tenant suspended successfully"
   echo "Tenant: $TENANT"
@@ -71,7 +74,13 @@ resume_tenant() {
 
   echo "[1/2] Resuming tenant: $TENANT"
 
-  sudo helm upgrade "$TENANT" "$CHART"     -n "$TENANT"     --reuse-values     --set replicaCount=1     --wait     --timeout 5m     --kubeconfig "$KUBECONFIG"
+  sudo helm upgrade "$TENANT" "$CHART" \
+    -n "$TENANT" \
+    --reuse-values \
+    --set replicaCount=1 \
+    --wait \
+    --timeout 5m \
+    --kubeconfig "$KUBECONFIG_PATH"
 
   echo "[2/2] Tenant resumed successfully"
   echo "Tenant: $TENANT"
@@ -82,11 +91,16 @@ delete_tenant() {
 
   echo "[1/3] Removing Helm release: $TENANT"
 
-  sudo helm uninstall "$TENANT"     -n "$TENANT"     --wait     --timeout 5m     --kubeconfig "$KUBECONFIG"
+  sudo helm uninstall "$TENANT" \
+    -n "$TENANT" \
+    --wait \
+    --timeout 5m \
+    --kubeconfig "$KUBECONFIG_PATH"
 
   echo "[2/3] Deleting namespace: $TENANT"
 
-  sudo kubectl delete namespace "$TENANT"     --kubeconfig "$KUBECONFIG"
+  sudo kubectl delete namespace "$TENANT" \
+    --kubeconfig "$KUBECONFIG_PATH"
 
   echo "[3/3] Tenant deleted successfully"
   echo "Tenant: $TENANT"
